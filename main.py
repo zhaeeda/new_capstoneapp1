@@ -25,7 +25,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 bigquery_client = bigquery.Client()
 
 def allowed_file(filename: str) -> bool:
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 def upload_file_to_storage(client: storage.Client, bucket_name: str, uploaded_file) -> bool:
     try:
@@ -101,13 +101,16 @@ def upload() -> str:
         user_email = session.get('email')
         user_name = session.get('name')
         
-        if user_email is None or user_name is None:
-            flash('Session data missing. Please go back to the main page and submit the form again.', 'error')
-            return redirect(url_for('index'))
-
-        # Save metadata details
+	    # Save metadata details
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Save user details and metadata in BigQuery
+        status = save_user_details(user_email, user_name, uploaded_file.filename, timestamp)
 
+        if status == 'Success':
+            flash('File uploaded successfully!', 'success')
+        else:
+            flash('File upload failed.', 'error')
+      
         # Create a Cloud Storage client.
         gcs = storage.Client(credentials=credentials)
 
@@ -123,14 +126,6 @@ def upload() -> str:
             logging.error(f"Error uploading file to Cloud Storage: {e}")
             flash('File upload failed.', 'error')
             return redirect(url_for('index'))
-
-        # Save user details and metadata in BigQuery
-        status = save_user_details(user_email, user_name, uploaded_file.filename, timestamp)
-
-        if status == 'Success':
-            flash('File uploaded successfully!', 'success')
-        else:
-            flash('File upload failed.', 'error')
 
         # The public URL can be used to directly access the uploaded file via HTTP.
         return render_template("success.html", email=user_email, name=user_name)
