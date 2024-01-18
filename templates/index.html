@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Home Page</title>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='blueapp.jpg') }}" alt="image" width="800">
+        <h1>Greetings! Step into the GCP Portal</h1>
+        <!-- Add a section to display flashed messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="post" action="/upload" enctype="multipart/form-data">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" placeholder="Enter Your Email Id">
+            <br>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter Your Full Name" required>
+            <br>
+            <button type="button" id="nextBtn">Next</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("nextBtn").addEventListener("click", function() {
+            window.location.href = "/upload";
+        });
+    </script>
+</body>
+</html>
